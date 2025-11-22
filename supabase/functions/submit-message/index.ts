@@ -129,6 +129,46 @@ function validateRequest(body: unknown): MessageRequest {
 }
 
 /**
+ * Extracts plain text content from the flexible response payloads returned by
+ * different OpenAI model families (e.g. GPT-4o, GPT-5).
+ */
+function extractTextContent(content: unknown): string {
+  if (typeof content === "string") {
+    return content.trim();
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "string") {
+          return part;
+        }
+
+        if (part && typeof part === "object") {
+          if ("text" in part && typeof (part as { text?: string }).text === "string") {
+            return (part as { text: string }).text;
+          }
+          if ("value" in part && typeof (part as { value?: string }).value === "string") {
+            return (part as { value: string }).value;
+          }
+        }
+
+        return "";
+      })
+      .join("")
+      .trim();
+  }
+
+  if (content && typeof content === "object") {
+    if ("text" in content && typeof (content as { text?: string }).text === "string") {
+      return (content as { text: string }).text.trim();
+    }
+  }
+
+  return "";
+}
+
+/**
  * Calls OpenAI API to rewrite the message using the configured prompt.
  * Returns the rewritten message or throws an error.
  */
@@ -181,9 +221,16 @@ async function rewriteMessageWithAI(
   }
 
   const openaiData = await openaiResponse.json();
-  const politeMessage = openaiData.choices[0]?.message?.content?.trim();
+  const primaryChoice = Array.isArray(openaiData?.choices) ? openaiData.choices[0] : undefined;
+  const politeMessage =
+    extractTextContent(primaryChoice?.message?.content) ||
+    extractTextContent(primaryChoice?.content);
 
   if (!politeMessage) {
+    console.error("[submit-message] Unexpected OpenAI payload shape", {
+      hasChoices: Array.isArray(openaiData?.choices),
+      choiceKeys: primaryChoice ? Object.keys(primaryChoice) : [],
+    });
     throw new Error("AI did not return a valid response");
   }
 
