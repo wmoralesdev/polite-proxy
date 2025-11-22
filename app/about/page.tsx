@@ -1,4 +1,4 @@
-import { Biohazard, BadgeCheck, ExternalLink } from 'lucide-react';
+import { Biohazard, BadgeCheck, ExternalLink, Github } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -675,6 +675,17 @@ interface ErrorResponse {
         </Card>
 
       </main>
+
+      <footer className="mx-auto max-w-3xl px-4 py-8 mt-12 flex justify-center border-t-2 border-black/10">
+        <Link
+          href="https://github.com/wmoralesdev/polite-proxy"
+          target="_blank"
+          className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider hover:text-primary transition-colors"
+        >
+          <Github className="w-5 h-5" />
+          GitHub Repository
+        </Link>
+      </footer>
     </div>
   );
 }
