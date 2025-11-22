@@ -10,6 +10,9 @@ import { PoliteProxyMessageList } from './polite-proxy-message-list';
 import { PoliteProxyComposer } from './polite-proxy-composer';
 import type { User } from '@supabase/supabase-js';
 import type { Message } from '@/lib/types/messages';
+import Link from 'next/link';
+import { Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface PoliteProxyClientProps {
   initialUser?: User | null;
@@ -40,6 +43,16 @@ export function PoliteProxyClient({
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 font-mono bg-background text-foreground selection:bg-black selection:text-primary">
       {/* Industrial Background Pattern */}
       <div className="absolute inset-0 hazard-stripe-subtle pointer-events-none opacity-50" />
+
+      {/* About Button */}
+      <div className="absolute top-4 right-4 z-50">
+        <Link href="/about">
+          <Button variant="outline" className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all bg-white font-bold uppercase tracking-wider">
+            <Info className="w-4 h-4 mr-2" />
+            Acerca de
+          </Button>
+        </Link>
+      </div>
 
       {/* Main Card */}
       <Card className="w-full max-w-md h-[85vh] flex flex-col border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200">

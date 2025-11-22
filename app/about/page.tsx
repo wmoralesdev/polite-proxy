@@ -1,6 +1,4 @@
-import React from 'react';
-import { Biohazard } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Biohazard, BadgeCheck, ExternalLink } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -8,32 +6,35 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { codeToHtml } from 'shiki';
+import Link from 'next/link';
+import { AuthorAvatar } from './author-avatar';
 
 export const metadata = {
   title: 'Arquitectura | Polite Proxy',
   description: 'Guía educativa sobre Supabase Edge Functions y arquitectura segura.',
 };
 
-// Helper for code blocks
-function CodeBlock({ code, label }: { code: string; label?: string }) {
+// Helper for code blocks with Shiki highlighting
+async function CodeBlock({ code, label }: { code: string; label?: string }) {
+  const html = await codeToHtml(code, {
+    lang: 'typescript',
+    theme: 'github-light'
+  });
+
   return (
-    <div className="relative mt-4 rounded-lg border bg-muted/50 p-4 font-mono text-sm">
+    <div className="relative mt-4 rounded-lg border bg-white p-0 font-mono text-sm overflow-hidden text-black">
       {label && (
-        <div className="absolute -top-3 left-4">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-6 bg-background text-xs uppercase tracking-widest hover:bg-background hover:text-primary cursor-default"
-          >
+        <div className="flex items-center px-4 py-2 border-b bg-muted/30">
+          <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
             {label}
-          </Button>
+          </span>
         </div>
       )}
-      <div className="overflow-x-auto">
-        <pre className="text-xs leading-relaxed">
-          <code>{code}</code>
-        </pre>
-      </div>
+      <div
+        className="overflow-x-auto p-4 [&>pre]:!bg-transparent [&>pre]:!m-0"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </div>
   );
 }
@@ -44,7 +45,7 @@ export default function AboutPage() {
       {/* Custom Header for /about */}
       <div className="sticky top-0 z-50 border-b-4 border-black bg-primary relative overflow-hidden">
         <div className="absolute top-0 right-0 w-16 h-full hazard-stripe opacity-20" />
-        
+
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 z-10">
             <div className="bg-black text-primary p-1.5 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.5)]">
@@ -59,16 +60,46 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex flex-col items-end z-10">
             <span className="text-xs font-bold uppercase tracking-wider">~10 min de lectura</span>
-            <span className="text-[10px] opacity-70 font-medium">Por Walter Morales (@wmoralesdev)</span>
           </div>
         </div>
       </div>
 
       <main className="mx-auto max-w-3xl px-4 pt-8 space-y-12">
-        
+
+        {/* Author Clearance Card */}
+        <div className="flex justify-center">
+          <Link
+            href="https://x.com/wmoralesdev"
+            target="_blank"
+            className="group relative block w-full no-underline"
+          >
+            <div className="absolute inset-0 bg-black translate-x-2 translate-y-2 transition-transform group-hover:translate-x-1 group-hover:translate-y-1" />
+            <div className="relative flex items-center gap-4 border-2 border-black bg-white p-4 transition-transform group-hover:translate-x-[-2px] group-hover:translate-y-[-2px]">
+              <AuthorAvatar />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Autorizado por
+                  </span>
+                  <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase text-green-700">
+                    <BadgeCheck className="h-3 w-3" /> Verificado
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold uppercase leading-tight">Walter Morales</h3>
+                    <p className="text-xs font-mono text-muted-foreground">@wmoralesdev</p>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-black" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+
         {/* Slide 1: Introduction */}
         <Card className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none">
           <CardHeader>
@@ -94,7 +125,7 @@ export default function AboutPage() {
             </div>
             <div className="bg-primary/10 p-4 border-l-4 border-primary mt-4">
               <p className="text-sm italic">
-                <strong>Nota clave:</strong> Todo el procesamiento ocurre en el servidor (Edge Function), 
+                <strong>Nota clave:</strong> Todo el procesamiento ocurre en el servidor (Edge Function),
                 protegiendo nuestras claves API y asegurando que solo datos limpios entren en la base de datos.
               </p>
             </div>
@@ -120,7 +151,7 @@ export default function AboutPage() {
               <li>Se ejecutan en milisegundos y escalan automáticamente.</li>
             </ul>
 
-            <CodeBlock 
+            <CodeBlock
               label="functions/submit-message/index.ts"
               code={`import { serve } from "std/http";
 
@@ -138,6 +169,51 @@ serve(async (req) => {
   }
 });`}
             />
+
+            <div className="mt-6 pt-6 border-t-2 border-muted">
+              <h3 className="font-bold uppercase text-sm tracking-wider mb-4">Ciclo de vida de una Edge Function</h3>
+              <div className="space-y-3">
+                <div className="bg-muted/30 p-3 rounded border-l-4 border-primary">
+                  <p className="text-sm font-medium mb-2">1. Desarrollo local</p>
+                  <p className="text-xs text-muted-foreground">Escribes el código TypeScript/Deno en tu máquina y lo pruebas con el CLI de Supabase.</p>
+                </div>
+                <div className="bg-muted/30 p-3 rounded border-l-4 border-primary">
+                  <p className="text-sm font-medium mb-2">2. Despliegue</p>
+                  <p className="text-xs text-muted-foreground">Usas <code className="bg-black/10 px-1 rounded">supabase functions deploy submit-message</code> para publicar la función en la nube.</p>
+                </div>
+                <div className="bg-muted/30 p-3 rounded border-l-4 border-primary">
+                  <p className="text-sm font-medium mb-2">3. Endpoint público</p>
+                  <p className="text-xs text-muted-foreground">La función queda disponible en <code className="bg-black/10 px-1 rounded">/functions/v1/submit-message</code> y puede recibir peticiones HTTP.</p>
+                </div>
+                <div className="bg-muted/30 p-3 rounded border-l-4 border-primary">
+                  <p className="text-sm font-medium mb-2">4. Invocaciones y logs</p>
+                  <p className="text-xs text-muted-foreground">Cada llamada genera logs que puedes ver en el dashboard de Supabase para debugging y monitoreo.</p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-background border-2 border-dashed border-muted rounded-lg">
+                <p className="text-xs font-bold uppercase mb-2 text-center">Diagrama del ciclo de vida</p>
+                <pre className="text-xs font-mono text-center leading-relaxed">
+                  {`Código Local → Deploy → Endpoint Público → Invocaciones → Logs/Monitoring
+    ↓              ↓            ↓                ↓              ↓
+  Deno CLI    Supabase CLI   HTTP URL      Requests      Dashboard`}
+                </pre>
+              </div>
+
+              <CodeBlock
+                label="Comandos de despliegue y prueba"
+                code={`# Desplegar la función
+supabase functions deploy submit-message
+
+# Probar localmente (con autenticación)
+supabase functions invoke submit-message
+  --body '{"message": "test"}'
+  --header "Authorization: Bearer YOUR_TOKEN"
+
+# Ver logs en tiempo real
+supabase functions logs submit-message`}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -157,7 +233,7 @@ serve(async (req) => {
                   Enfoque tradicional (Cliente)
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Si haces todo desde el navegador, expones lógica de validación y a veces claves. 
+                  Si haces todo desde el navegador, expones lógica de validación y a veces claves.
                   Un usuario malintencionado puede saltarse el frontend y escribir basura en tu DB.
                 </p>
               </div>
@@ -167,7 +243,7 @@ serve(async (req) => {
                   Enfoque Edge Function
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  La función actúa como un portero. Nadie escribe en la tabla `messages` directamente; 
+                  La función actúa como un portero. Nadie escribe en la tabla `messages` directamente;
                   todos deben pasar por la función, que garantiza limpieza y orden.
                 </p>
               </div>
@@ -204,20 +280,55 @@ serve(async (req) => {
                 <span className="absolute -left-[31px] top-0 bg-background border-2 border-muted w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                 <h4 className="font-bold">Validación estricta</h4>
                 <p className="text-sm text-muted-foreground">Usamos Zod para asegurar que el mensaje no esté vacío ni sea demasiado largo.</p>
+                <div className="mt-2 p-2 bg-primary/5 border-l-2 border-primary text-xs">
+                  <strong>🔒 Protección:</strong> Las claves de API y la estructura interna de la base de datos nunca se exponen al cliente.
+                </div>
               </li>
               <li className="relative">
                 <span className="absolute -left-[31px] top-0 bg-background border-2 border-muted w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
                 <h4 className="font-bold">Reescritura con IA</h4>
                 <p className="text-sm text-muted-foreground">Enviamos el texto a OpenAI con instrucciones de ser "cortés y profesional".</p>
+                <div className="mt-2 p-2 bg-primary/5 border-l-2 border-primary text-xs">
+                  <strong>🔒 Protección:</strong> La clave de OpenAI permanece oculta en variables de entorno del servidor. El cliente nunca la ve.
+                </div>
               </li>
               <li className="relative">
                 <span className="absolute -left-[31px] top-0 bg-background border-2 border-muted w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
                 <h4 className="font-bold">Persistencia segura</h4>
                 <p className="text-sm text-muted-foreground">Solo guardamos la respuesta saneada. El mensaje original nunca toca la base de datos.</p>
+                <div className="mt-2 p-2 bg-primary/5 border-l-2 border-primary text-xs">
+                  <strong>🔒 Protección:</strong> Usamos el cliente admin de Supabase (SECRET_KEY) que bypass RLS, pero solo después de validar y sanear.
+                </div>
               </li>
             </ol>
 
-            <CodeBlock 
+            <div className="mt-6 pt-6 border-t-2 border-muted">
+              <h3 className="font-bold uppercase text-sm tracking-wider mb-4">Manejo de errores y casos límite</h3>
+              <div className="space-y-3 text-sm">
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 rounded">
+                  <p className="font-bold mb-1">❌ Validación Zod falla</p>
+                  <p className="text-xs text-muted-foreground mb-1">Si el mensaje está vacío o excede 1000 caracteres:</p>
+                  <p className="text-xs font-mono bg-black/5 p-2 rounded">HTTP 400: {"{"} "error": "El mensaje no puede estar vacío" {"}"}</p>
+                </div>
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 rounded">
+                  <p className="font-bold mb-1">❌ OpenAI devuelve error</p>
+                  <p className="text-xs text-muted-foreground mb-1">Si la API de OpenAI falla o no responde:</p>
+                  <p className="text-xs font-mono bg-black/5 p-2 rounded">HTTP 502: {"{"} "error": "Failed to process message with AI" {"}"}</p>
+                </div>
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 rounded">
+                  <p className="font-bold mb-1">❌ Inserción en DB falla</p>
+                  <p className="text-xs text-muted-foreground mb-1">Si hay un problema al guardar en Supabase:</p>
+                  <p className="text-xs font-mono bg-black/5 p-2 rounded">HTTP 500: {"{"} "error": "Failed to save message" {"}"}</p>
+                </div>
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 rounded">
+                  <p className="font-bold mb-1">⚠️ Autenticación inválida</p>
+                  <p className="text-xs text-muted-foreground mb-1">Si el token JWT es inválido o expiró:</p>
+                  <p className="text-xs font-mono bg-black/5 p-2 rounded">HTTP 401: {"{"} "error": "Unauthorized" {"}"}</p>
+                </div>
+              </div>
+            </div>
+
+            <CodeBlock
               label="Validación con Zod"
               code={`const MessageSchema = z.object({
   message: z.string()
@@ -261,9 +372,9 @@ function validateRequest(body: unknown) {
                   </li>
                 </ul>
               </div>
-              
+
               <div className="min-w-0">
-                 <CodeBlock 
+                <CodeBlock
                   label="Orquestación Principal"
                   code={`async function handlePost(req: Request) {
   // 1. Configuración segura
@@ -353,11 +464,16 @@ function validateRequest(body: unknown) {
         <Card className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none">
           <CardHeader>
             <CardTitle className="text-2xl font-black uppercase tracking-tight">Arquitectura de un vistazo</CardTitle>
+            <CardDescription>
+              Vista general del sistema y flujo detallado de una petición.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex justify-center bg-white p-6 border-2 border-dashed border-black/20 rounded-lg">
-              <pre className="text-xs md:text-sm leading-loose font-mono text-center">
-{`[ Next.js UI ]
+          <CardContent className="space-y-8">
+            <div>
+              <h3 className="font-bold uppercase text-sm tracking-wider mb-3">Vista general del sistema</h3>
+              <div className="flex justify-center bg-white p-6 border-2 border-dashed border-black/20 rounded-lg">
+                <pre className="text-xs md:text-sm leading-loose font-mono text-center">
+                  {`[ Next.js UI ]
     ↓
 [ Supabase Auth ]
     ↓
@@ -368,11 +484,60 @@ function validateRequest(body: unknown) {
 [ Realtime Subscription (WebSocket) ]
     ↓
 [ Next.js UI (Actualización) ]`}
-              </pre>
+                </pre>
+              </div>
             </div>
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Un ciclo completo: desde la acción del usuario hasta la confirmación visual, pasando por capas de seguridad.
-            </p>
+
+            <div className="pt-6 border-t-2 border-muted">
+              <h3 className="font-bold uppercase text-sm tracking-wider mb-3">Secuencia detallada de una petición</h3>
+              <div className="bg-muted/30 p-4 rounded-lg border-2 border-muted overflow-x-auto">
+                <pre className="text-xs font-mono leading-relaxed whitespace-pre">
+                  {`1. Usuario escribe "hola tonto" y pulsa enviar
+   └─> Frontend: { message: "hola tonto" }
+
+2. Frontend hace fetch() con Authorization header
+   └─> POST /functions/v1/submit-message
+   └─> Headers: { Authorization: "Bearer JWT_TOKEN" }
+   └─> Body: { message: "hola tonto" }
+
+3. Edge Function recibe la petición
+   └─> Valida método HTTP (debe ser POST)
+   └─> Extrae y verifica JWT token
+   └─> Identifica usuario autenticado
+
+4. Validación con Zod
+   └─> Verifica: message.length > 0 && message.length <= 1000
+   └─> ✅ Pasa validación
+
+5. Edge Function llama a OpenAI API
+   └─> Envía: { model: "gpt-4", messages: [...] }
+   └─> Headers: { Authorization: "Bearer OPENAI_KEY" } ← OCULTO
+   └─> Recibe: { content: "Hola, ¿cómo puedo ayudarte?" }
+
+6. Edge Function guarda en Supabase DB
+   └─> Usa SECRET_KEY (admin) ← OCULTO
+   └─> INSERT INTO messages (content, user_id)
+   └─> Recibe: { id: "123", content: "...", created_at: "..." }
+
+7. Edge Function responde al Frontend
+   └─> HTTP 200 OK
+   └─> Body: { data: { id, content, created_at, user_id } }
+
+8. Supabase Realtime detecta nuevo INSERT
+   └─> WebSocket notifica a todos los clientes suscritos
+
+9. Frontend recibe actualización vía Realtime
+   └─> Actualiza UI con el mensaje filtrado
+   └─> Usuario ve: "Hola, ¿cómo puedo ayudarte?"`}
+                </pre>
+              </div>
+              <div className="mt-4 p-3 bg-primary/5 border-l-4 border-primary rounded">
+                <p className="text-xs">
+                  <strong>Nota importante:</strong> En los pasos 5 y 6, las claves secretas (OPENAI_KEY, SECRET_KEY)
+                  nunca salen del servidor. El cliente solo ve el resultado final sanitizado.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -381,17 +546,70 @@ function validateRequest(body: unknown) {
           <CardHeader>
             <CardTitle className="text-2xl font-black uppercase tracking-tight">Cómo usa el Frontend este Backend</CardTitle>
             <CardDescription>
-              Integración transparente para el usuario.
+              Integración transparente para el usuario y contrato explícito entre capas.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <p>
-              El frontend es "tonto" a propósito. No sabe cómo sanear mensajes ni tiene claves de OpenAI. 
-              Solo sabe pedirle al backend que haga el trabajo sucio.
+              El frontend es "tonto" a propósito. No sabe cómo sanear mensajes ni tiene claves de OpenAI.
+              Solo sabe pedirle al backend que haga el trabajo sucio. Esta separación de responsabilidades
+              se mantiene mediante un contrato bien definido que el frontend debe respetar.
             </p>
-            <CodeBlock 
+
+            <div className="bg-muted/30 p-4 rounded-lg border-2 border-muted">
+              <h3 className="font-bold uppercase text-sm tracking-wider mb-4">Contrato Frontend ↔ Backend</h3>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="font-bold mb-2">📤 Request (Frontend → Edge Function)</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                    <li><strong>Endpoint:</strong> <code className="bg-black/10 px-1 rounded">POST /functions/v1/submit-message</code></li>
+                    <li><strong>Headers requeridos:</strong> <code className="bg-black/10 px-1 rounded">Authorization: Bearer JWT_TOKEN</code></li>
+                    <li><strong>Body:</strong> <code className="bg-black/10 px-1 rounded">{"{"} "message": string (1-1000 chars) {"}"}</code></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-bold mb-2">✅ Response exitosa (Edge Function → Frontend)</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                    <li><strong>Status:</strong> <code className="bg-black/10 px-1 rounded">HTTP 200</code></li>
+                    <li><strong>Body:</strong> <code className="bg-black/10 px-1 rounded">{"{"} "data": {"{"} "id": string, "content": string, "created_at": string, "user_id": string {"}"} {"}"}</code></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-bold mb-2">❌ Response de error (Edge Function → Frontend)</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                    <li><strong>Status:</strong> <code className="bg-black/10 px-1 rounded">400</code> (validación), <code className="bg-black/10 px-1 rounded">401</code> (auth), <code className="bg-black/10 px-1 rounded">500</code> (servidor), <code className="bg-black/10 px-1 rounded">502</code> (OpenAI)</li>
+                    <li><strong>Body:</strong> <code className="bg-black/10 px-1 rounded">{"{"} "error": string {"}"}</code></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <CodeBlock
+              label="Tipos TypeScript (conceptuales)"
+              code={`// Lo que el frontend envía
+interface SubmitMessageRequest {
+  message: string;  // 1-1000 caracteres, validado por Zod
+}
+
+// Lo que el frontend recibe en caso de éxito
+interface SubmitMessageResponse {
+  data: {
+    id: string;              // UUID del mensaje guardado
+    content: string;          // Mensaje ya sanitizado por OpenAI
+    created_at: string;       // ISO timestamp
+    user_id: string;          // ID del usuario autenticado
+  };
+}
+
+// Lo que el frontend recibe en caso de error
+interface ErrorResponse {
+  error: string;  // Mensaje descriptivo del error
+}`}
+            />
+
+            <CodeBlock
               label="Cliente (React Hook)"
-              code={`const handleSubmit = async (text) => {
+              code={`const handleSubmit = async (text: string) => {
   // Enviamos el texto crudo a nuestra función segura
   const response = await fetch(
     \`\${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/submit-message\`,
@@ -405,9 +623,24 @@ function validateRequest(body: unknown) {
     }
   );
 
-  if (!response.ok) throw new Error("Falló el envío");
+  if (!response.ok) {
+    const error: ErrorResponse = await response.json();
+    throw new Error(error.error);
+  }
+
+  const result: SubmitMessageResponse = await response.json();
+  return result.data; // Mensaje sanitizado listo para mostrar
 };`}
             />
+
+            <div className="bg-primary/5 p-4 border-l-4 border-primary rounded">
+              <p className="text-sm">
+                <strong>Separación de responsabilidades:</strong> El frontend solo conoce este contrato público.
+                No sabe nada sobre variables de entorno, la estructura física de la tabla `messages`,
+                el prompt exacto enviado a OpenAI, ni la lógica interna de saneamiento. Esto hace que el
+                sistema sea más seguro, mantenible y fácil de evolucionar sin romper el frontend.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
