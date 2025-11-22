@@ -32,7 +32,7 @@ export function AuthorAvatar() {
         isGlitching && "translate-x-1 translate-y-[-2px] saturate-200 contrast-200 scale-110"
       )}>
         <Image
-          src={isToxic ? "/me-toxic.png" : "/me.png"}
+          src={isToxic ? "/me-toxic.png" : "/me.jpeg"}
           alt="Walter Morales"
           fill
           className="object-cover"
